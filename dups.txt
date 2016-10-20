@@ -1,0 +1,9 @@
+_Miri.txt , C:\Users\golaniz\Desktop\DuplicateFiles\b\2\_Miri.txt
+_Miri.txt , C:\Users\golaniz\Desktop\DuplicateFiles\c\3\_Miri.txt
+Gabi.txt , C:\Users\golaniz\Desktop\DuplicateFiles\a\3\Gabi.txt
+Gabi.txt , C:\Users\golaniz\Desktop\DuplicateFiles\b\2\Gabi.txt
+Yonatan.txt , C:\Users\golaniz\Desktop\DuplicateFiles\a\2\Yonatan.txt
+Yonatan.txt , C:\Users\golaniz\Desktop\DuplicateFiles\b\33\Yonatan.txt
+Yonatan.txt , C:\Users\golaniz\Desktop\DuplicateFiles\c\2\Yonatan.txt
+_Liat.txt , C:\Users\golaniz\Desktop\DuplicateFiles\b\1\_Liat.txt
+_Liat.txt , C:\Users\golaniz\Desktop\DuplicateFiles\c\4\_Liat.txt

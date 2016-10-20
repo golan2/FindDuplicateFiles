@@ -1,0 +1,125 @@
+package file.scanner;
+
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * <pre>
+ * <B>Copyright:</B>   HP Software IL
+ * <B>Owner:</B>       <a href="mailto:izik.golan@hp.com">Izik Golan</a>
+ * <B>Creation:</B>    12/12/2014 11:04
+ * <B>Since:</B>       BSM 9.21
+ * <B>Description:</B>
+ * Scan all sub folders to find files that are the same.
+ *
+ * TODO: What is considered as a "same file"
+ * TODO: Use EhCache instead of map
+ *
+ * </pre>
+ */
+public class DuplicateFiles {
+
+  private static final byte[] SEPARATOR = " , ".getBytes();
+  private static final String NEWLINE = "\n";
+
+  public static void main(String[] args) throws IOException {
+
+    String rootFolder = args[0];
+    String outputFile = args[1];
+
+    Map<String, List<String>> duplications = calculateDuplicateFiles(rootFolder);
+
+    try (FileOutputStream fos = new FileOutputStream(outputFile);BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+      for (String fileName : duplications.keySet()) {
+        List<String> dups = duplications.get(fileName);
+        for (String dup : dups) {
+          bos.write(fileName.getBytes());
+          bos.write(SEPARATOR);
+          bos.write(dup.getBytes());
+          bos.write(NEWLINE.getBytes());
+        }
+      }
+    }
+
+
+  }
+
+  private static Map<String, List<String>> calculateDuplicateFiles(String rootFolder) throws IOException {
+    DuplicateVisitor visitor = new DuplicateVisitor();
+    Files.walkFileTree(Paths.get(rootFolder), visitor);
+    visitor.removeNonDuplicates();
+    return visitor.getFiles();
+  }
+
+  private static class DuplicateVisitor implements FileVisitor<Path> {
+    private final Map<String, List<String>> files = new HashMap<>();  // { key = file short name ; value = list of paths that contain a file with this name }
+
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+      String shortName = file.getFileName().toString();   //name with extension without path
+
+      List<String> paths = this.files.get(shortName);
+      boolean addBack = false;
+      if (paths==null) {
+        paths = new ArrayList<>();
+        addBack = true;
+      }
+      paths.add(file.toString());
+      if (addBack) {
+        this.files.put(shortName, paths);
+      }
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
+
+    public void removeNonDuplicates() {
+      Set<String> fileNames = this.files.keySet();
+      Iterator<String> iterator = fileNames.iterator();
+      while (iterator.hasNext()) {
+        String fileName = iterator.next();
+        if (this.files.get(fileName).size()<2) {
+          iterator.remove();
+        }
+      }
+    }
+
+    public Map<String, List<String>> getFiles() {
+      return files;
+    }
+  }
+
+  private static class DuplicateEntity {
+    String fileName;
+    List<String> paths;
+    float overallSize;
+
+
+  }
+}
